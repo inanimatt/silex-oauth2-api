@@ -1,6 +1,7 @@
 <?php
 require __DIR__.'/../vendor/autoload.php';
 
+// TODO: switch to Symfony 2.3 DI component, lazy loading, cached container
 $di = new \Pimple;
 
 // Initiate the Request handler
