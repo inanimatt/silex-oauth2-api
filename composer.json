@@ -1,0 +1,13 @@
+{
+    "require": {
+        "slim/slim": "~2.2",
+        "pimple/pimple": "~1.0",
+        "doctrine/dbal": "~2.3",
+        "league/oauth2-server": "~2.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Inanimatt": "src"
+        }
+    }
+}
