@@ -9,14 +9,25 @@ $di['oauth_request'] = $di->share(function () {
 });
 
 // Initiate a new database connection
-$di['oauth_db'] = $di->share(function () {
-    return new League\OAuth2\Server\Storage\PDO\Db('mysql://user:pass@localhost/oauth');
+$di['db'] = $di->share(function () {
+    $config = new \Doctrine\DBAL\Configuration();
+    $connectionParams = array(
+        'dbname'   => 'mydb',
+        'user'     => 'myusername',
+        'password' => 'lovesexsecret',
+        'host'     => 'localhost',
+        'driver'   => 'pdo_mysql',
+        'encoding' => 'utf8',
+    );
+    $conn = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
+    
+    return $conn;
 });
 
 // Initiate the auth server with the models
 $di['oauth_server'] = $di->share(function () use ($di) {
     return new League\OAuth2\Server\Resource(
-        new League\OAuth2\Server\Storage\PDO\Session($di['oauth_db'])
+        new Inanimatt\OAuth2\Server\Storage\DBAL\Session($di['db'])
     );
 });
 
