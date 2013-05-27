@@ -1,16 +1,20 @@
 <?php
 require __DIR__.'/../vendor/autoload.php';
 
-// TODO: switch to Symfony 2.3 DI component, lazy loading, cached container
-$di = new \Pimple;
+$app = new Silex\Application;
+$app['debug'] = true;
 
 // Initiate the Request handler
-$di['oauth_request'] = $di->share(function () {
-    return new \OAuth2\Util\Request();
+$app['oauth_request'] = $app->share(function () {
+    return Inanimatt\OAuth2\Server\Util\Request::buildFromGlobals();
 });
 
+$app['json_response'] = function () {
+    return new \Symfony\Component\HttpFoundation\JsonResponse;
+};
+
 // Initiate a new database connection
-$di['db'] = $di->share(function () {
+$app['db'] = $app->share(function () {
     $config = new \Doctrine\DBAL\Configuration();
     $connectionParams = array(
         'dbname'   => 'hubapi_slim',
@@ -20,23 +24,36 @@ $di['db'] = $di->share(function () {
         'driver'   => 'pdo_mysql',
         'encoding' => 'utf8',
     );
+
     $conn = \Doctrine\DBAL\DriverManager::getConnection($connectionParams, $config);
-    
+
     return $conn;
 });
 
 // Initiate the auth server with the models
-$di['oauth_server'] = $di->share(function () use ($di) {
+$app['oauth_server'] = $app->share(function () use ($app) {
     return new League\OAuth2\Server\Resource(
-        new Inanimatt\OAuth2\Server\Storage\DBAL\Session($di['db'])
+        new Inanimatt\OAuth2\Server\Storage\DBAL\Session($app['db'])
     );
 });
 
-$di['check_token'] = $di->share(function ($di) {
+$app['auth_server'] = $app->share(function () use ($app) {
+    $server = new League\OAuth2\Server\Authorization(
+        new Inanimatt\OAuth2\Server\Storage\DBAL\Client($app['db']),
+        new Inanimatt\OAuth2\Server\Storage\DBAL\Session($app['db']),
+        new Inanimatt\OAuth2\Server\Storage\DBAL\Scope($app['db'])
+    );
 
-    return function(\Slim\Route $route) use ($di)
-    {
-        $server = $di['oauth_server'];
+    $server->addGrantType(new League\OAuth2\Server\Grant\ClientCredentials($server));
+    $server->setRequest($app['oauth_request']);
+
+    return $server;
+});
+
+$app['check_token'] = $app->share(function () use ($app) {
+
+    return function (Symfony\Component\HttpFoundation\Request $request) use ($app) {
+        $server = $app['oauth_server'];
 
         // Test for token existance and validity
         try {
@@ -46,33 +63,37 @@ $di['check_token'] = $di->share(function ($di) {
         // The access token is missing or invalid...
         catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e)
         {
-            $app = \Slim\Slim::getInstance();
-            $res = $app->response();
-            $res['Content-Type'] = 'application/json';
-            $res->status(403);
+            $response = $app['json_response'];
+            $response->setData(array(
+                'error' => $e->getMessage(),
+            ));
+            $response->setStatusCode(403);
 
-            $res->body(json_encode(array(
-                'error' =>  $e->getMessage()
-            )));
-            $app->stop();
+            return $response;
         }
     };
 
 });
 
-$app = new Slim\Slim(array(
-    'debug' => true,
-));
+$app->post('/oauth/v2/token', function () use ($app) {
 
+    $result = $app['auth_server']->issueAccessToken();
 
-$app->get('/', $di['check_token'], function () use ($app, $di) {
+    $response = $app['json_response'];
+    $response->setData($result);
+
+    return $response;
+});
+
+$app->get('/api/assets', function () use ($app) {
     $result = array(
         'result' => 'Hello world',
     );
 
-    $response = $app->response();
-    $response['Content-Type'] = 'application/json';
-    $response->body(json_encode($result));
-});
+    $response = $app['json_response'];
+    $response->setData($result);
+
+    return $response;
+})->before($app['check_token']);
 
 return $app;
