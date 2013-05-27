@@ -1,5 +1,12 @@
 <?php
-
+/**
+ * Doctrine DBAL server storage class for LEOP's OAuth2 server library
+ * 
+ * Why? Because the built-in one uses zetacomponents/database and the rest of
+ * your app uses Doctrine2 ORM or DBAL. Using this DBAL implementation offers
+ * no other advantages; zetacomponents/database and doctrine/dbal are roughly
+ * equivalent.
+ */
 namespace Inanimatt\OAuth2\Server\Storage\DBAL;
 
 use League\OAuth2\Server\Storage\SessionInterface;
@@ -30,7 +37,7 @@ class Session implements SessionInterface
             'client_id'  => $clientId,
             'owner_type' => $ownerType,
             'owner_id'   => $ownerId,
-        );
+        ));
     }
 
     public function associateRedirectUri($sessionId, $redirectUri)
@@ -38,7 +45,7 @@ class Session implements SessionInterface
         $this->db->insert('oauth_session_redirects', array(
             'session_id'   => $sessionId,
             'redirect_uri' => $redirectUri,
-        );
+        ));
     }
 
     public function associateAccessToken($sessionId, $accessToken, $expireTime)
@@ -47,7 +54,7 @@ class Session implements SessionInterface
             'session_id'           => $sessionId,
             'access_token'         => $accessToken,
             'access_token_expires' => $expireTime,
-        );
+        ));
 
         return $this->db->lastInsertId();
     }
@@ -59,7 +66,7 @@ class Session implements SessionInterface
             'refresh_token'           => $refreshToken,
             'refresh_token_expires'   => $expireTime,
             'client_id'               => $clientId,
-        );
+        ));
     }
 
     public function associateAuthCode($sessionId, $authCode, $expireTime)
@@ -68,7 +75,7 @@ class Session implements SessionInterface
             'session_id'        => $sessionId,
             'auth_code'         => $authCode,
             'auth_code_expires' => $expireTime,
-        );
+        ));
 
         return $this->db->lastInsertId();
     }
@@ -77,14 +84,12 @@ class Session implements SessionInterface
     {
         $this->db->delete('oauth_session_authcodes', array(
             'session_id' => $sessionId,
-        );
+        ));
     }
 
     public function validateAuthCode($clientId, $redirectUri, $authCode)
     {
-        
-
-        $stmt = $db->prepare('SELECT oauth_sessions.id AS session_id, oauth_session_authcodes.id AS authcode_id
+        $stmt = $this->db->prepare('SELECT oauth_sessions.id AS session_id, oauth_session_authcodes.id AS authcode_id
          FROM oauth_sessions JOIN oauth_session_authcodes ON oauth_session_authcodes.`session_id`
           = oauth_sessions.id JOIN oauth_session_redirects ON oauth_session_redirects.`session_id`
           = oauth_sessions.id WHERE oauth_sessions.client_id = :clientId AND oauth_session_authcodes.`auth_code`
@@ -96,72 +101,60 @@ class Session implements SessionInterface
         $stmt->bindValue(':time', time());
         $stmt->execute();
 
-        $result = $stmt->fetchObject();
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
 
         return ($result === false) ? false : (array) $result;
     }
 
     public function validateAccessToken($accessToken)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('SELECT session_id, oauth_sessions.`client_id`, oauth_sessions.`owner_id`, oauth_sessions.`owner_type` FROM `oauth_session_access_tokens` JOIN oauth_sessions ON oauth_sessions.`id` = session_id WHERE  access_token = :accessToken AND access_token_expires >= ' . time());
+        $stmt = $this->db->prepare('SELECT session_id, oauth_sessions.`client_id`, oauth_sessions.`owner_id`, oauth_sessions.`owner_type` FROM `oauth_session_access_tokens` JOIN oauth_sessions ON oauth_sessions.`id` = session_id WHERE  access_token = :accessToken AND access_token_expires >= ' . time());
         $stmt->bindValue(':accessToken', $accessToken);
         $stmt->execute();
 
-        $result = $stmt->fetchObject();
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
         return ($result === false) ? false : (array) $result;
     }
 
     public function removeRefreshToken($refreshToken)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('DELETE FROM `oauth_session_refresh_tokens` WHERE refresh_token = :refreshToken');
-        $stmt->bindValue(':refreshToken', $refreshToken);
-        $stmt->execute();
+        $this->db->delete('oauth_session_refresh_tokens', array(
+            'refresh_token' => $refreshToken,
+        ));
     }
 
     public function validateRefreshToken($refreshToken, $clientId)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('SELECT session_access_token_id FROM `oauth_session_refresh_tokens` WHERE
+        $stmt = $this->db->prepare('SELECT session_access_token_id FROM `oauth_session_refresh_tokens` WHERE
          refresh_token = :refreshToken AND client_id = :clientId AND refresh_token_expires >= ' . time());
         $stmt->bindValue(':refreshToken', $refreshToken);
         $stmt->bindValue(':clientId', $clientId);
         $stmt->execute();
 
-        $result = $stmt->fetchObject();
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
         return ($result === false) ? false : $result->session_access_token_id;
     }
 
     public function getAccessToken($accessTokenId)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('SELECT * FROM `oauth_session_access_tokens` WHERE `id` = :accessTokenId');
+        $stmt = $this->db->prepare('SELECT * FROM `oauth_session_access_tokens` WHERE `id` = :accessTokenId');
         $stmt->bindValue(':accessTokenId', $accessTokenId);
         $stmt->execute();
 
-        $result = $stmt->fetchObject();
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
         return ($result === false) ? false : (array) $result;
     }
 
     public function associateAuthCodeScope($authCodeId, $scopeId)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('INSERT INTO `oauth_session_authcode_scopes` (`oauth_session_authcode_id`, `scope_id`) VALUES (:authCodeId, :scopeId)');
-        $stmt->bindValue(':authCodeId', $authCodeId);
-        $stmt->bindValue(':scopeId', $scopeId);
-        $stmt->execute();
+        $this->db->insert('oauth_session_authcode_scopes', array(
+            'oauth_session_authcode_id' => $authCodeId,
+            'scope_id' => $scopeId,
+        ));
     }
 
     public function getAuthCodeScopes($oauthSessionAuthCodeId)
     {
-        $db = \ezcDbInstance::get();
-
         $stmt = $db->prepare('SELECT scope_id FROM `oauth_session_authcode_scopes` WHERE oauth_session_authcode_id = :authCodeId');
         $stmt->bindValue(':authCodeId', $oauthSessionAuthCodeId);
         $stmt->execute();
@@ -171,20 +164,15 @@ class Session implements SessionInterface
 
     public function associateScope($accessTokenId, $scopeId)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('INSERT INTO `oauth_session_token_scopes` (`session_access_token_id`, `scope_id`)
-         VALUE (:accessTokenId, :scopeId)');
-        $stmt->bindValue(':accessTokenId', $accessTokenId);
-        $stmt->bindValue(':scopeId', $scopeId);
-        $stmt->execute();
+        $this->db->insert('oauth_session_token_scopes', array(
+            'session_access_token_id' => $accessTokenId,
+            'scope_id' => $scopeId,
+        ));
     }
 
     public function getScopes($accessToken)
     {
-        $db = \ezcDbInstance::get();
-
-        $stmt = $db->prepare('SELECT oauth_scopes.* FROM oauth_session_token_scopes JOIN oauth_session_access_tokens ON oauth_session_access_tokens.`id` = `oauth_session_token_scopes`.`session_access_token_id` JOIN oauth_scopes ON oauth_scopes.id = `oauth_session_token_scopes`.`scope_id` WHERE access_token = :accessToken');
+        $stmt = $this->db->prepare('SELECT oauth_scopes.* FROM oauth_session_token_scopes JOIN oauth_session_access_tokens ON oauth_session_access_tokens.`id` = `oauth_session_token_scopes`.`session_access_token_id` JOIN oauth_scopes ON oauth_scopes.id = `oauth_session_token_scopes`.`scope_id` WHERE access_token = :accessToken');
         $stmt->bindValue(':accessToken', $accessToken);
         $stmt->execute();
 
