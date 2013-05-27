@@ -88,6 +88,8 @@ $app->post('/oauth/v2/token', function () use ($app) {
 $app->get('/api/assets', function () use ($app) {
     $result = array(
         'result' => 'Hello world',
+        'client_id' => $app['oauth_server']->getClientId(),
+        'scopes' => $app['oauth_server']->getScopes(),
     );
 
     $response = $app['json_response'];
