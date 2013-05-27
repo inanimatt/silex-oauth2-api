@@ -13,9 +13,9 @@ $di['oauth_request'] = $di->share(function () {
 $di['db'] = $di->share(function () {
     $config = new \Doctrine\DBAL\Configuration();
     $connectionParams = array(
-        'dbname'   => 'mydb',
-        'user'     => 'myusername',
-        'password' => 'lovesexsecret',
+        'dbname'   => 'hubapi_slim',
+        'user'     => 'root',
+        'password' => '',
         'host'     => 'localhost',
         'driver'   => 'pdo_mysql',
         'encoding' => 'utf8',
@@ -32,17 +32,47 @@ $di['oauth_server'] = $di->share(function () use ($di) {
     );
 });
 
+$di['check_token'] = $di->share(function ($di) {
+
+    return function(\Slim\Route $route) use ($di)
+    {
+        $server = $di['oauth_server'];
+
+        // Test for token existance and validity
+        try {
+            $server->isValid();
+        }
+
+        // The access token is missing or invalid...
+        catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e)
+        {
+            $app = \Slim\Slim::getInstance();
+            $res = $app->response();
+            $res['Content-Type'] = 'application/json';
+            $res->status(403);
+
+            $res->body(json_encode(array(
+                'error' =>  $e->getMessage()
+            )));
+            $app->stop();
+        }
+    };
+
+});
 
 $app = new Slim\Slim(array(
     'debug' => true,
 ));
 
-$app->get('/', function () use ($app, $di) {
+
+$app->get('/', $di['check_token'], function () use ($app, $di) {
+    $result = array(
+        'result' => 'Hello world',
+    );
+
     $response = $app->response();
     $response['Content-Type'] = 'application/json';
-    $response->body(json_encode(array(
-        'result' => 'Hello world',
-    )));
+    $response->body(json_encode($result));
 });
 
 return $app;
