@@ -1,4 +1,4 @@
-# A minimal "working" Silex/OAuth 2.0-based API
+# A minimal working Silex/OAuth 2.0-based API
 
 Stuff it does:
 
@@ -9,26 +9,14 @@ Stuff it does:
 
 Stuff it doesn't do:
 
-* There are no Authorization Server routes (e.g. for creating & authorising clients), only the token granting route.
+* There are no Authorization Server routes (e.g. for creating & authorising clients), except for the token granting route. There's an AGPL authorisation server implementation at [fkooman/php-oauth](https://github.com/fkooman/php-oauth) if you're looking for hints on how to do this. 
 * Only `client_credentials` grant type is implemented.
-* No content negotiation
-* No JSON exceptions
+* No content negotiation.
+* No JSON exceptions.
 * You have to define your own scopes (just insert them into the `oauth_scopes` table).
+* It doesn't define a coding structure - you should refactor `src/app.php` into whatever way you prefer to work. If you carry on with it as it is, it'll become unmaintainable very quickly. 
 
-## Why is "working" in quotes?
+## Known issues
 
-As of the time of writing, scopes are broken in php-leop/oauth2-server. By the time you read this, it's probably fine. The `getScopes` function accesses a 'key' column that doesn't exist - it probably means 'scope' or 'name', so if it's not working by the time you install this, and you need to check scope, modify the `isValid()` method on line 179ish of `vendor/league/oauth2-server/src/League/OAuth2/Server/Resource.php`. Change this:
+The [`php-loep/oauth2-server`](https://github.com/php-loep/oauth2-server) dependency in `composer.json` is currently pinned to `dev-develop` until a new release is made that includes a fix for the `getScopes` method on the Resource Server class. Any version newer than 2.1 will do, so if one has been released when you start using this project, change the version (e.g. `~2.2`) and do a `composer update` to install it. In the meantime, I've included a `composer.lock` that points to a working version, so you can just use that with `composer install` and everything should be fine.
 
-```php
-foreach ($sessionScopes as $scope) {
-    $this->sessionScopes[] = $scope['key'];
-}
-```
-
-to something like this:
-
-```php
-foreach ($sessionScopes as $scope) {
-    $this->sessionScopes[] = $scope['scope']; // or name… who knows
-}
-```
