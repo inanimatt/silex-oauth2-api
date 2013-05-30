@@ -1,0 +1,9 @@
+<?php
+return array(
+    'dbname'   => 'mydatabase',
+    'user'     => 'myuser',
+    'password' => 'mypassword',
+    'host'     => 'localhost',
+    'driver'   => 'pdo_mysql',
+    'encoding' => 'utf8',
+);
