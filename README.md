@@ -16,7 +16,12 @@ Stuff it doesn't do:
 * You have to define your own scopes (just insert them into the `oauth_scopes` table).
 * It doesn't define a coding structure - you should refactor `src/app.php` into whatever way you prefer to work. If you carry on with it as it is, it'll become unmaintainable very quickly. 
 
+* Only the `client_credentials` grant type is implemented. Adding the other grant types should be straightforward, though, and `client_credentials` might be just fine depending on what your API does.
+
+* No proper content negotiation; just dies if `application/json` isn't accepted.
+
+* You must define your own scopes (just insert them into the `oauth_scopes` table), or resign yourself to not using them.
+
 ## Known issues
 
-The [`php-loep/oauth2-server`](https://github.com/php-loep/oauth2-server) dependency in `composer.json` is currently pinned to `dev-develop` until a new release is made that includes a fix for the `getScopes` method on the Resource Server class. Any version newer than 2.1 will do, so if one has been released when you start using this project, change the version (e.g. `~2.2`) and do a `composer update` to install it. In the meantime, I've included a `composer.lock` that points to a working version, so you can just use that with `composer install` and everything should be fine.
-
+None yet…!

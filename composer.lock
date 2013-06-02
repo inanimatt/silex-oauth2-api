@@ -3,7 +3,7 @@
         "This file locks the dependencies of your project to a known state",
         "Read more about it at http://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file"
     ],
-    "hash": "6d6be3df5b575774d52f871707b99bcb",
+    "hash": "f144b3a5d06f4a48d7afd00b99ef689f",
     "packages": [
         {
             "name": "doctrine/common",
@@ -139,16 +139,16 @@
         },
         {
             "name": "league/oauth2-server",
-            "version": "dev-develop",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-loep/oauth2-server.git",
-                "reference": "a9ecca92fc9d8547475b5f6fc14110925cc25675"
+                "reference": "2.1.1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-loep/oauth2-server/zipball/a9ecca92fc9d8547475b5f6fc14110925cc25675",
-                "reference": "a9ecca92fc9d8547475b5f6fc14110925cc25675",
+                "url": "https://api.github.com/repos/php-loep/oauth2-server/zipball/2.1.1",
+                "reference": "2.1.1",
                 "shasum": ""
             },
             "require": {
@@ -193,7 +193,7 @@
                 "resource",
                 "server"
             ],
-            "time": "2013-05-27 18:38:07"
+            "time": "2013-06-02 12:55:01"
         },
         {
             "name": "pimple/pimple",
@@ -600,9 +600,9 @@
 
     ],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "league/oauth2-server": 20
-    },
+    "stability-flags": [
+
+    ],
     "platform": [
 
     ],
