@@ -6,7 +6,7 @@
 DirectoryIndex app.php
 
 # Define front controller (this is a neat alternative to mod_rewrite)
-FallbackResource app.php
+FallbackResource /app.php
 
 # Compress responses
 AddOutputFilterByType DEFLATE text/html text/javascript text/css application/javascript application/json
