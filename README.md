@@ -4,7 +4,7 @@ Stuff it does:
 
 * Actually bloody works. I'm not proud, but I am tired.
 
-* Implements a Doctrine DBAL storage interface for the [LEOP OAuth server](https://github.com/php-loep/oauth2-server). (Because Silex has built-in integration for the DBAL, not because I think it's better or worse than zetacomponents).
+* Implements a Doctrine DBAL storage interface for the [LOEP OAuth 2 server](https://github.com/php-loep/oauth2-server). (Because Silex has built-in integration for the DBAL, not because I think it's better or worse than zetacomponents).
 
 * Provides an access token for the `client_credentials` grant type. 
 
