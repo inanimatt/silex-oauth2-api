@@ -40,6 +40,15 @@ class ArrayToJsonListener implements EventSubscriberInterface
 
             $r->headers->set('X-API-Version', $this->api_version);
 
+            if (isset($response['X-Location']) && $response['X-Location']) {
+                $r->headers->set('Location', $response['X-Location']);
+                unset($response['X-Location']);
+            }
+
+            if (isset($response['X-Deprecated']) && $response['X-Deprecated']) {
+                $r->headers->set('X-API-Warning', 'This method is deprecated');
+                unset($response['X-Deprecated']);
+            }
 
             $r->setData($response);
             $event->setResponse($r);
