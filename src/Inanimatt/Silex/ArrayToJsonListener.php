@@ -31,23 +31,21 @@ class ArrayToJsonListener implements EventSubscriberInterface
         if (is_array($response)) {
             $statusCode = 200;
 
-            if (isset($response['X-Status-Code']) && $response['X-Status-Code']) {
-                $statusCode = $response['X-Status-Code'];
-                unset($response['X-Status-Code']);
+            if (isset($response['httpStatus']) && $response['httpStatus']) {
+                $statusCode = $response['httpStatus'];
+                unset($response['httpStatus']);
             }
 
             $r = new JsonResponse(null, $statusCode);
 
             $r->headers->set('X-API-Version', $this->api_version);
 
-            if (isset($response['X-Location']) && $response['X-Location']) {
-                $r->headers->set('Location', $response['X-Location']);
-                unset($response['X-Location']);
-            }
+            if (isset($response['httpHeaders']) && is_array($response['httpHeaders'])) {
+                foreach ($response['httpHeaders'] as $key => $value) {
+                    $r->headers->set($key, $value);
+                }
 
-            if (isset($response['X-Deprecated']) && $response['X-Deprecated']) {
-                $r->headers->set('X-API-Warning', 'This method is deprecated');
-                unset($response['X-Deprecated']);
+                unset($response['httpHeaders']);
             }
 
             $r->setData($response);

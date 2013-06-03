@@ -17,7 +17,10 @@ class TestController
     public function test()
     {
         $result = array(
-            'X-Status-Code' => 200,
+            'httpStatus' => 200,
+            'httpHeaders' => array(
+                'Link' => '<https://example.com/api-docs/test.html>; rel="help"',
+            ),
             'result' => 'Hello world',
             'client_id' => $this->resource_server->getClientId(),
             'scopes' => $this->resource_server->getScopes(),
