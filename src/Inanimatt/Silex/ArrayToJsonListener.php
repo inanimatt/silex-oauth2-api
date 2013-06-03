@@ -5,13 +5,20 @@ namespace Inanimatt\Silex;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\Event\GetResponseForControllerResultEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Inanimatt\Silex\JsonResponse;
 
 /**
  * Converts array responses to JsonResponse instances.
  */
 class ArrayToJsonListener implements EventSubscriberInterface
 {
+    protected $api_version;
+
+    public function __construct($api_version)
+    {
+        $this->api_version = $api_version;
+    }
+
     /**
      * Handles string responses.
      *
@@ -29,7 +36,13 @@ class ArrayToJsonListener implements EventSubscriberInterface
                 unset($response['X-Status-Code']);
             }
 
-            $event->setResponse(new JsonResponse($response, $statusCode));
+            $r = new JsonResponse(null, $statusCode);
+
+            $r->headers->set('X-API-Version', $this->api_version);
+
+
+            $r->setData($response);
+            $event->setResponse($r);
         }
     }
 
