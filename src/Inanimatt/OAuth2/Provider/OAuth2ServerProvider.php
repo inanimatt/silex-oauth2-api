@@ -41,26 +41,24 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
         });
 
         // Register authorisation route middleware
-        $app['oauth2.check_token'] = $app->share(
-            $app->protect(function (Request $request) use ($app) {
-                $server = $app['oauth2.resource_server'];
+        $app['oauth2.check_token'] = $app->protect(function (Request $request) use ($app) {
+            $server = $app['oauth2.resource_server'];
 
-                // Test for token existance and validity
-                try {
-                    $server->isValid();
-                }
+            // Test for token existance and validity
+            try {
+                $server->isValid();
+            }
 
-                // The access token is missing or invalid...
-                catch (\League\OAuth2\Server\Exception\InvalidAccessTokenException $e)
-                {
-                    $error = array(
-                        'error' => $e->getMessage(),
-                    );
+            // The access token is missing or invalid...
+            catch (\League\OAuth2\Server\Exception\InvalidAccessTokenException $e)
+            {
+                $error = array(
+                    'error' => $e->getMessage(),
+                );
 
-                    return $app->json($error, 403);
-                }
-            })
-        );
+                return $app->json($error, 403);
+            }
+        });
     }
 
     public function boot(Application $app) {}
