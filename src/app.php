@@ -10,6 +10,9 @@ use Symfony\Component\HttpFoundation\Response;
 $app = new Application;
 $app['debug'] = false;
 
+// Require SSL/TLS. See the README for why you shouldn't change this
+$app['controllers']->requireHttps();
+
 // Initiate a new database connection
 $app['db'] = $app->share(function () {
     $config = new \Doctrine\DBAL\Configuration();
