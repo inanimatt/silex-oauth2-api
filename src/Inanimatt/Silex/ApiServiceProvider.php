@@ -8,7 +8,7 @@ use Silex\Application;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-class ApiProvider implements ServiceProviderInterface
+class ApiServiceProvider implements ServiceProviderInterface
 {
     protected $version;
 
@@ -37,8 +37,6 @@ class ApiProvider implements ServiceProviderInterface
             }
         });
 
-        // Convert array responses to JSON
-        $app['dispatcher']->addSubscriber(new ArrayToJsonListener($app['api.version']));
         $app['api.response'] = function () use ($app) {
             $response = new ApiResponse();
             $response->setVersion($app['api.version']);
@@ -70,5 +68,8 @@ class ApiProvider implements ServiceProviderInterface
         });
     }
 
-    public function boot(Application $app) {}
+    public function boot(Application $app) {
+        // Convert array responses to JSON
+        $app['dispatcher']->addSubscriber(new ArrayToJsonListener($app['api.version']));
+    }
 }

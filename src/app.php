@@ -14,7 +14,7 @@ $app['debug'] = false;
 $app['controllers']->requireHttps();
 
 // Set up some handy API services
-$app->register(new Inanimatt\Silex\ApiProvider('1.0.0-alpha')); // Your API version string here
+$app->register(new Inanimatt\Silex\ApiServiceProvider('1.0.0-alpha')); // Your API version string here
 
 // Initiate a new database connection
 $app['db'] = $app->share(function () {
