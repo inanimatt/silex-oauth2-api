@@ -29,3 +29,19 @@ Stuff it doesn't do:
 ## Known issues
 
 None yet…!
+
+
+## Using it
+
+* Clone, fork, or download this repository. 
+
+* Install the required dependencies with [Composer](http://getcomposer.org), e.g. `composer install`.
+
+* **Set up an SSL VHost** and point its document root at the `web` folder. **This is important!** OAuth 2.0 requires a TLS connection; it is not secure without it. You should test and develop with an SSL VHost too (you can use a self-signed certificate) so that you know it works. I've put a global requirement on the app to require https; think carefully before removing it.
+
+* A `.htaccess` file is provided for Apache, but you can of course serve with nginx or whatever else you want instead. In fact that's probably better.
+
+* Copy `src\database.php.dist` to `src\database.php` and customise. Or configure your database another way. You don't *have* to use Doctrine DBAL, but if you don't, you'll have to write your own implementation of the `League/OAuth2/Server/Storage` classes and replace the `Inanimatt\OAuth2\Provider\OAuth2ServerProvider` with your own (or just override the `oauth2.resource_server` and `oauth2.authorization_server` services). Not a big deal; the DBAL ones took about half an hour.
+
+* Add your own code! I recommend the "controllers as services" approach taken by the included test controller, because it can make your code more readable/maintainable and your controllers more portable, but you can of course do whatever you want.
+
