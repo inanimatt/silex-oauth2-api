@@ -13,6 +13,9 @@ $app['debug'] = false;
 // Require SSL/TLS. See the README for why you shouldn't change this
 $app['controllers']->requireHttps();
 
+// Set up some handy API services
+$app->register(new Inanimatt\Silex\ApiProvider('1.0.0-alpha')); // Your API version string here
+
 // Initiate a new database connection
 $app['db'] = $app->share(function () {
     $config = new \Doctrine\DBAL\Configuration();
@@ -23,44 +26,6 @@ $app['db'] = $app->share(function () {
     return $conn;
 });
 
-// Convert array responses to JSON - the argument is the API version string you want to send
-$app['dispatcher']->addSubscriber(new ArrayToJsonListener('1.0.0-alpha'));
-
-// Require that clients accept JSON (or */*)
-$app->before(function (Request $request) {
-    $formats = $request->getAcceptableContentTypes();
-
-    if (!(
-        in_array('application/json', $formats) // Supported
-        || in_array('*/*', $formats) // Hey, you asked for it, buddy
-    )){
-        $message = '<html><head><title>Error</title></head><body><h1>Error</h1><p>This API currently only supports JSON
-        responses, and the headers of your HTTP request don\'t include the <code>application/json</code> format in the
-        <code>Accept</code> header.</p></body></html>';
-
-        return new Response($message, 406);
-    }
-});
-
-// JSON Exception handling
-$app->error(function (\Exception $e, $code) use ($app) {
-    if ($app['debug']) {
-        return;
-    }
-
-    $format = $app['request']->attributes->get('format');
-
-    $code = $e->getCode() ?: $code;
-
-    $response = new JsonResponse();
-    $response->setData(array(
-        'error' => $e->getMessage(),
-        'code' => $e->getCode(),
-    ));
-    $response->headers->set('X-Status-Code', $code);
-
-    return $response;
-});
 
 // Register OAuth2 server and controllers
 $oauth2_service_provider = new Inanimatt\OAuth2\Provider\OAuth2ServerProvider();

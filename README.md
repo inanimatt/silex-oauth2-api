@@ -14,7 +14,9 @@ Stuff it does:
 
 * Example of coding framework-independent controllers as services, registered with a Silex provider.
 
-* Registers a listener that converts array responses to JSON responses so that your framework-independent controllers aren't dependent on the Symfony JsonResponse class (because that'd defeat the point a bit).
+* Registers a listener that converts array responses to JSON responses so that your framework-independent controllers don't have to depend on the Symfony JsonResponse class.
+
+* Provides an `ApiResponse` object that extends `JsonResponse`, adding API version, documentation and deprecation headers, and pretty-printed output.
 
 Stuff it doesn't do:
 
@@ -45,3 +47,4 @@ None yet…!
 
 * Add your own code! I recommend the "controllers as services" approach taken by the included test controller, because it can make your code more readable/maintainable and your controllers more portable, but you can of course do whatever you want.
 
+* Instead of using Silex's `return $app->json($data);` method, consider using the provided `$app['api.response']` service instead. It returns an `Inanimatt\Api\ApiResponse` object that extends the JsonResponse to include a version header, and some helpful methods: `setDocumentation($url)` and `setDeprecated(true)`. 
