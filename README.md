@@ -30,8 +30,7 @@ Stuff it doesn't do:
 
 ## Known issues
 
-None yet…!
-
+* The JSON exception handler makes a hell of an assumption about the exception code: if it's between 100-600, it assumes that it's an HTTP status code. That's fine for exceptions you throw, because you can set the code yourself, but there are all kinds of other things that can go wrong, and in those cases the status code will be a bit of a crap-shoot. You might want to change it so that only the error codes of exceptions you define have their error codes trusted. If I think of a nice way to do this, I'll do it myself, but I'm open to suggestions!
 
 ## Using it
 
