@@ -4,6 +4,7 @@ namespace Inanimatt\OAuth2\Provider;
 use Silex\Application;
 use Silex\ServiceProviderInterface;
 use Silex\ControllerProviderInterface;
+use Symfony\Component\HttpFoundation\Request;
 
 class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProviderInterface
 {
@@ -40,9 +41,8 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
         });
 
         // Register authorisation route middleware
-        $app['oauth2.check_token'] = $app->share(function () use ($app) {
-
-            return function (\Symfony\Component\HttpFoundation\Request $request) use ($app) {
+        $app['oauth2.check_token'] = $app->share(
+            $app->protect(function (Request $request) use ($app) {
                 $server = $app['oauth2.resource_server'];
 
                 // Test for token existance and validity
@@ -59,8 +59,8 @@ class OAuth2ServerProvider implements ServiceProviderInterface, ControllerProvid
 
                     return $app->json($error, 403);
                 }
-            };
-        });
+            })
+        );
     }
 
     public function boot(Application $app) {}
