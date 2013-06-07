@@ -13,7 +13,7 @@ class TestProvider implements ControllerProviderInterface, ServiceProviderInterf
     public function register(Application $app)
     {
         $app['test.controller'] = $app->share(function () use ($app) {
-            return new TestController($app['oauth2.resource_server']);
+            return new TestController($app['oauth2.resource_server'], $app['api.response']);
         });
     }
 
@@ -24,7 +24,8 @@ class TestProvider implements ControllerProviderInterface, ServiceProviderInterf
     {
         $test = $app['controllers_factory'];
 
-        $test->get('/test', "test.controller:test")->before($app['oauth2.check_token']);
+        $test->get('/test-array', "test.controller:testArray")->before($app['oauth2.check_token']);
+        $test->get('/test-response', "test.controller:testResponse")->before($app['oauth2.check_token']);
 
         return $test;
     }
