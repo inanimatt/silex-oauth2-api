@@ -68,7 +68,8 @@ class ApiServiceProvider implements ServiceProviderInterface
         });
     }
 
-    public function boot(Application $app) {
+    public function boot(Application $app)
+    {
         // Convert array responses to JSON
         $app['dispatcher']->addSubscriber(new ArrayToJsonListener($app['api.response']));
     }
