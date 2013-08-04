@@ -37,6 +37,15 @@ class ApiServiceProvider implements ServiceProviderInterface
             }
         });
 
+        // Convert JSON request bodies into request parameters
+        $app->before(function (Request $request) {
+            if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+                $data = json_decode($request->getContent(), true);
+                $request->request->replace(is_array($data) ? $data : array());
+            }
+        });
+
+        // Prepare API Response object
         $app['api.response'] = function () use ($app) {
             $response = new ApiResponse();
             $response->setVersion($app['api.version']);
