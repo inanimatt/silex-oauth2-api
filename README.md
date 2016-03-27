@@ -1,3 +1,5 @@
+# Don't use this, it's unmaintained and out of date.
+
 # A minimal working Silex/OAuth 2.0-based API
 
 Stuff it does:
